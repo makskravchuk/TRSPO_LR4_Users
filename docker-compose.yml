@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  users_service:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8001
+    volumes:
+      - .:/users
+    ports:
+      - "8001:8001"
