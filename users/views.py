@@ -1,3 +1,5 @@
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
@@ -9,13 +11,17 @@ from users.models import User
 from users.serializers import UserSerializer, TokenSerializer
 
 
-# Create your views here.
 class UserListAPIView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+    @method_decorator(cache_page(60))
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
+
 
 class UserAPIView(APIView):
+    @method_decorator(cache_page(60))
     def get(self, request, pk):
         user = User.objects.get(pk=pk)
         serializer = UserSerializer(user)
@@ -30,7 +36,7 @@ class UserAPIView(APIView):
     def put(self, request, pk):
         try:
             instance = User.objects.get(pk=pk)
-        except:
+        except Exception:
             return Response({"error": "Object does not exists"})
 
         serializer = UserSerializer(data=request.data, instance=instance)
@@ -41,7 +47,7 @@ class UserAPIView(APIView):
     def delete(self, request, pk):
         try:
             User.objects.filter(pk=pk).delete()
-        except:
+        except Exception:
             return Response({"error": "Object does not exists"})
         return Response(status=200)
 
